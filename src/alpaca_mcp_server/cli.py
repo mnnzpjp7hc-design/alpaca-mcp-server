@@ -61,7 +61,7 @@ def main(transport: str, host: str, port: int, env_file: Optional[Path]):
             "Error: MCP_BEARER_TOKEN is required for remote HTTP transport.",
             err=True,
         )
-    sys.exit(1)
+        sys.exit(1)
     from .server import build_server
 
     server = build_server()
