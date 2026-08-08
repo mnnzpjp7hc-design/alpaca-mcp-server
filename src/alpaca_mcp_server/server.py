@@ -16,6 +16,7 @@ from typing import Any
 
 import httpx
 from fastmcp import FastMCP
+from fastmcp.server.auth.providers.jwt import StaticTokenVerifier
 from fastmcp.server.providers.openapi.routing import MCPType
 
 from .readme_docs import ReadMeClientFactory, register_readme_docs_tools
@@ -95,7 +96,21 @@ def _parse_toolsets() -> set[str] | None:
         return None
     return {t.strip() for t in raw.split(",") if t.strip()}
 
+def _build_mcp_auth() -> StaticTokenVerifier | None:
+    token = os.environ.get("MCP_BEARER_TOKEN", "").strip()
 
+    if not token:
+        return None
+
+    return StaticTokenVerifier(
+        tokens={
+            token: {
+                "client_id": "alpaca-paper-owner",
+                "scopes": ["alpaca:access"],
+            }
+        },
+        required_scopes=["alpaca:access"],
+    )
 def build_server(
     readme_client_factory: ReadMeClientFactory | None = None,
 ) -> FastMCP:
@@ -135,7 +150,11 @@ def build_server(
             for c in clients:
                 await c.aclose()
 
-    main = FastMCP("Alpaca MCP Server", lifespan=lifespan)
+    main = FastMCP(
+    "Alpaca MCP Server",
+    lifespan=lifespan,
+    auth=_build_mcp_auth(),
+)
     main.add_middleware(TrustBoundaryMiddleware())
 
     if trading_client is not None:
