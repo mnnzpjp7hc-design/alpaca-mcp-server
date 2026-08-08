@@ -56,11 +56,11 @@ def main(transport: str, host: str, port: int, env_file: Optional[Path]):
             err=True,
         )
         sys.exit(1)
-if transport != "stdio" and not os.environ.get("MCP_BEARER_TOKEN", "").strip():
-    click.echo(
-        "Error: MCP_BEARER_TOKEN is required for remote HTTP transport.",
-        err=True,
-    )
+    if transport != "stdio" and not os.environ.get("MCP_BEARER_TOKEN", "").strip():
+        click.echo(
+            "Error: MCP_BEARER_TOKEN is required for remote HTTP transport.",
+            err=True,
+        )
     sys.exit(1)
     from .server import build_server
 
